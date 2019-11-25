@@ -107,6 +107,10 @@ sdm_carex<-sdm(Carex_lepidocarpa+Carex_jemtlandica~
                             replication=c('cv'),cv.folds=5)
 sdm_carex
 
+modevalcarex<-cbind(sdm_carex@run.info,getEvaluation(sdm_carex))
+with(modevalcarex,tapply(AUC,species,mean))
+with(modevalcarex,tapply(AUC,species,sd))
+
 #Variables importances
 varimplist<-list()
 for (i in 1:max(sdm_carex@run.info$modelID)){
@@ -151,7 +155,7 @@ lines(responsecurvelist[[1]]@response$bio10_16[,1],apply(responsecurvelist[[1]]@
         +apply(responsecurvelist[[1]]@response$bio10_16[,2:ncol(responsecurvelist[[1]]@response$bio10_16)],1,sd),lty=2)
 lines(responsecurvelist[[1]]@response$bio10_16[,1],apply(responsecurvelist[[1]]@response$bio10_16[,2:ncol(responsecurvelist[[1]]@response$bio10_16)],1,mean)
         -apply(responsecurvelist[[1]]@response$bio10_16[,2:ncol(responsecurvelist[[1]]@response$bio10_16)],1,sd),lty=2)
-
+legend('topl',lty=1,col=c(1,2),c('Carex lepidocarpa','Carex jemtlandica'))
 lines(responsecurvelist[[2]]@response$bio10_16[,1],apply(responsecurvelist[[2]]@response$bio10_16[,2:ncol(responsecurvelist[[2]]@response$bio10_16)],1,mean)
      ,type='l',main=levels(carex$species)[i],col=2)
 lines(responsecurvelist[[2]]@response$bio10_16[,1],apply(responsecurvelist[[2]]@response$bio10_16[,2:ncol(responsecurvelist[[2]]@response$bio10_16)],1,mean)
@@ -261,5 +265,3 @@ lp2<-levelplot(s1,par.settings='YlOrRdTheme',
 #tiff('Figures/Niches2.tif',height = 1200,width = 1000,units='px',res=100)
 grid.arrange(lp1,lp2)
 #dev.off()
-
-nicheOverlap()
