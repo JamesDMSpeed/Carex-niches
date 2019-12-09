@@ -7,7 +7,6 @@ library(sp)
 library(sdm)
 library(gridExtra)
 
-
 #Norway outline
 norway<-getData('GADM',level=0,country='NOR')
 
