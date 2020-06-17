@@ -88,9 +88,10 @@ pB<-levelplot(predvars[[1]]*0,col.regions=grey(1),colorkey=F,scales=list(draw=F)
   layer(sp.points(background_utm,pch=1,cex=0.1,col=1))
 
 tiff('Figures/AllData.tif',width = 1600,height = 1000,pointsize = 20,units = 'px')
+pdf('Figures/AllData.pdf',width = 16,height = 10,pointsize = 20)
 grid.arrange(pt,pp,pps,pph,pL,pJ,pB,ncol=4)
 dev.off()
-
+dev.off()
 
 #SDM
 #Make the sdm dataset
@@ -132,10 +133,12 @@ varimpsp_mean<-with(CarexVarImp,tapply(corTest,list(species,variables),mean))
 varimpsp_sem<-with(CarexVarImp,tapply(corTest,list(species,variables),sem))  
 
 tiff('Figures/VarImp.tif',width=800,height=600,pointsize = 20)
+pdf('Figures/VarImp.pdf',width=9,height=7,pointsize = 20)
 par(mar=c(5,5,1,1))
 b1<-barplot(varimpsp_mean,beside=T,ylab='Variable importance',names.arg=c('MST','MAP','Precipitation \n seasonality','Soil pH'),las=1,ylim=c(0,0.80),
             legend.text=sub("_"," ",rownames(varimpsp_mean)))     
 arrows(b1,varimpsp_mean+varimpsp_sem,b1,varimpsp_mean-varimpsp_sem,length=0.05,code=3,angle=90)
+dev.off()
 dev.off()
 
 #Response curves
@@ -147,6 +150,7 @@ for (i in 1:length(levels(as.factor(sdm_carex@run.info$species)))){
 }
 
 tiff('Figures/ResponseCurves.tif',width = 1200,height=1200,units='px',pointsize = 20)
+pdf('Figures/ResponseCurves.pdf',width = 13,height=13,pointsize = 20)
 par(mfrow=c(2,2))
 par(mar=c(5,5,1,1))
 plot(responsecurvelist[[1]]@response$bio10_16[,1],apply(responsecurvelist[[1]]@response$bio10_16[,2:ncol(responsecurvelist[[1]]@response$bio10_16)],1,mean)
@@ -205,11 +209,12 @@ lines(responsecurvelist[[2]]@response$SoilpH[,1],apply(responsecurvelist[[2]]@re
 lines(responsecurvelist[[2]]@response$SoilpH[,1],apply(responsecurvelist[[2]]@response$SoilpH[,2:ncol(responsecurvelist[[2]]@response$SoilpH)],1,mean)
       -apply(responsecurvelist[[2]]@response$SoilpH[,2:ncol(responsecurvelist[[2]]@response$SoilpH)],1,sd),lty=2,col=2)
 dev.off()
+dev.off()
 
 #Predictions
-leppred<-predict(sdm_carex,predvars,filename='ModelPredictions/carlep',species='Carex_lepidocarpa',mean=T)
+leppred<-predict(sdm_carex,predvars,filename='ModelPredictions/carlep',species='Carex_lepidocarpa',mean=T,overwrite=T)
 leppred  
-jempred<-predict(sdm_carex,predvars,filename='ModelPredictions/carjem',species='Carex_jemtlandica',mean=T)
+jempred<-predict(sdm_carex,predvars,filename='ModelPredictions/carjem',species='Carex_jemtlandica',mean=T,overwrite=T)
 jempred  
 leppred_mean<-calc(leppred,mean)
 jempred_mean<-calc(jempred,mean)
@@ -217,16 +222,18 @@ levelplot(stack(leppred_mean,jempred_mean),scales=list(draw=F),names.attr=c('C. 
 
 #Ensembling
 ens_lep<-ensemble(sdm_carex,newdata = predvars,filename = 'ModelPredictions/lep_ensemble',
-                  setting=list(method='weighted',stat='AUC',
+                  setting=list(method='weighted',stat='AUC',overwrite=T,
                                id=sdm_carex@run.info$modelID[sdm_carex@run.info$species=='Carex_lepidocarpa']),overwrite=TRUE)
 ens_jem<-ensemble(sdm_carex,newdata = predvars,filename = 'ModelPredictions/jem_ensemble',
-                  setting=list(method='weighted',stat='AUC',
+                  setting=list(method='weighted',stat='AUC',overwrite=T,
                                id=sdm_carex@run.info$modelID[sdm_carex@run.info$species=='Carex_jemtlandica']),overwrite=T)
 
 tiff('Figures/HSMMap.tif',width=1200,height=800,units='px',pointsize = 20,res=300)
+pdf('Figures/HSMMap.pdf',width=1200,height=800,pointsize = 20)
 levelplot(stack(ens_lep,ens_jem),scales=list(draw=F),names.attr=c('C. lepidocarpa','C. jemtlandica'),par.settings='YlOrRdTheme',
           cex=1.5)+
   layer(sp.polygons(norwayP,col=grey(0.5)))
+dev.off()
 dev.off()
 
 #Niche (MST and precip season)
@@ -240,9 +247,11 @@ levelplot(s1,par.settings='YlOrRdTheme')
 #Set extent as actual climate variables
 extent(s1)<-stack(nl@scaleParams)[,1]
 tiff('Figures/Niches.tif',width=800,height = 800,res=150)
+pdf('Figures/Niches.pfd',width=8,height = 8)
 levelplot(s1,par.settings='YlOrRdTheme',
           xlab=expression('MST'~(degree~C)),ylab='Precipitation seasonality',
           names.attr=c('C. lepidocarpa','C. jemtlandica'),cex=0.8)
+dev.off()
 dev.off()
 
 niche(predvars,ens_lep,c('bio10_16','bio12_16'))
